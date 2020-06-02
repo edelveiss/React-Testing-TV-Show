@@ -12,32 +12,38 @@ import "./styles.css";
 export default function App() {
   const [show, setShow] = useState(null);
   const [seasons, setSeasons] = useState([]);
+  const [showText, setShowText] = useState("");
+  const [error, setError] = useState("");
+  const [showApi, setShowApi] = useState(
+    "https://api.tvmaze.com/singlesearch/shows?q=stranger-things&embed=episodes"
+  );
   const [selectedSeason, setSelectedSeason] = useState("");
   const episodes = seasons[selectedSeason] || [];
 
   useEffect(() => {
-    fetchShow()
+    fetchShow(showApi)
       .then((res) => {
         setShow(res.data);
+        setError("");
         setSeasons(formatSeasons(res.data._embedded.episodes));
       })
       .catch((error) => {
         console.log("fetchig error", error);
+        setError(error);
       });
+  }, [showApi]);
 
-    // const fetchShow = () => {
-    //   axios
-    //     .get(
-    //       "https://api.tvmaze.com/singlesearch/shows?q=stranger-things&embed=episodes"
-    //     )
-    //     .then(res => {
-    //       setShow(res.data);
-    //       setSeasons(formatSeasons(res.data._embedded.episodes));
-    //     });
-    // };
-
-    //fetchShow();
-  }, []);
+  const handleChanges = (e) => {
+    setShowText(e.target.value);
+  };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const showWords = showText.split(" ").join("-").toLowerCase();
+    setShowApi(
+      `https://api.tvmaze.com/singlesearch/shows?q=${showWords}&embed=episodes`
+    );
+    console.log(showWords);
+  };
 
   const handleSelect = (e) => {
     setSelectedSeason(e.value);
@@ -49,6 +55,21 @@ export default function App() {
 
   return (
     <div className="App">
+      <form onSubmit={handleSubmit}>
+        <input
+          id="show"
+          type="text"
+          name="show"
+          placeholder="Enter TV show"
+          value={showText}
+          onChange={handleChanges}
+        />
+      </form>
+      {error ? (
+        <p style={{ color: "red" }}>
+          We do not have this TV Show, please, enter another one.
+        </p>
+      ) : null}
       <img className="poster-img" src={show.image.original} alt={show.name} />
       <h1>{show.name}</h1>
       {parse(show.summary)}
