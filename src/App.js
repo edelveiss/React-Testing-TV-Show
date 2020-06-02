@@ -43,6 +43,7 @@ export default function App() {
       `https://api.tvmaze.com/singlesearch/shows?q=${showWords}&embed=episodes`
     );
     console.log(showWords);
+    setShowText("");
   };
 
   const handleSelect = (e) => {
@@ -70,7 +71,11 @@ export default function App() {
           We do not have this TV Show, please, enter another one.
         </p>
       ) : null}
-      <img className="poster-img" src={show.image.original} alt={show.name} />
+      {show.image ? (
+        <img className="poster-img" src={show.image.original} alt={show.name} />
+      ) : (
+        <p>We do not have a picture of {show.name} TV Show</p>
+      )}
       <h1>{show.name}</h1>
       {parse(show.summary)}
       <Dropdown
