@@ -3,6 +3,7 @@ import axios from "axios";
 import Dropdown from "react-dropdown";
 import parse from "html-react-parser";
 import { fetchShow } from "./api/fetchShow";
+import Autocomplete from "./components/Autocomplete";
 
 import { formatSeasons } from "./utils/formatSeasons";
 
@@ -14,6 +15,7 @@ export default function App() {
   const [seasons, setSeasons] = useState([]);
   const [showText, setShowText] = useState("");
   const [error, setError] = useState("");
+  const [desiredShow, setDesiredShow] = useState([]);
   const [showApi, setShowApi] = useState(
     "https://api.tvmaze.com/singlesearch/shows?q=stranger-things&embed=episodes"
   );
@@ -28,22 +30,31 @@ export default function App() {
         setSeasons(formatSeasons(res.data._embedded.episodes));
       })
       .catch((error) => {
-        console.log("fetchig error", error);
         setError(error);
       });
   }, [showApi]);
+
+  useEffect(() => {
+    axios
+      .get(`http://api.tvmaze.com/search/shows?q=${showText}`)
+      .then((response) => {
+        setDesiredShow(response.data);
+      });
+  }, [showText]);
 
   const handleChanges = (e) => {
     setShowText(e.target.value);
   };
   const handleSubmit = (e) => {
+    setShow(null);
+    setSelectedSeason("");
     e.preventDefault();
     const showWords = showText.split(" ").join("-").toLowerCase();
     setShowApi(
-      // `http://api.tvmaze.com/search/shows?q=${showWords}`
       `https://api.tvmaze.com/singlesearch/shows?q=${showWords}&embed=episodes`
     );
-    console.log(showWords);
+
+    setShowText("");
   };
 
   const handleSelect = (e) => {
@@ -71,6 +82,15 @@ export default function App() {
           We do not have this TV Show, please, enter another one.
         </p>
       ) : null}
+      <Autocomplete
+        desiredShow={desiredShow}
+        setShowApi={setShowApi}
+        setDesiredShow={setDesiredShow}
+        setShowText={setShowText}
+        setSeasons={setSeasons}
+        setSelectedSeason={setSelectedSeason}
+        setShow={setShow}
+      />
 
       {show.image ? (
         <img className="poster-img" src={show.image.original} alt={show.name} />
@@ -79,7 +99,8 @@ export default function App() {
       )}
 
       <h1>{show.name}</h1>
-      {parse(show.summary)}
+      {show.summary && parse(show.summary)}
+
       <Dropdown
         options={Object.keys(seasons)}
         onChange={handleSelect}
