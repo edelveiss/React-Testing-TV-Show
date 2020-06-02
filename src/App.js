@@ -29,8 +29,9 @@ export default function App() {
         setError("");
         setSeasons(formatSeasons(res.data._embedded.episodes));
       })
-      .catch((error) => {
-        setError(error);
+      .catch((err) => {
+        console.log("error in App", err);
+        setError(err);
       });
   }, [showApi]);
 
@@ -43,10 +44,13 @@ export default function App() {
   }, [showText]);
 
   const handleChanges = (e) => {
+    if (error) {
+      setError("");
+    }
     setShowText(e.target.value);
   };
   const handleSubmit = (e) => {
-    setShow(null);
+    //setShow(null);
     setSelectedSeason("");
     e.preventDefault();
     const showWords = showText.split(" ").join("-").toLowerCase();
@@ -77,6 +81,7 @@ export default function App() {
           onChange={handleChanges}
         />
       </form>
+
       {error ? (
         <p style={{ color: "red" }}>
           We do not have this TV Show, please, enter another one.
